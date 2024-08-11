@@ -1,1 +1,64 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Compiler</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Python Compiler</h1>
+    </header>
+    <div class="container">
+        <textarea id="code" placeholder="Write your Python code here..." oninput="runCode()"></textarea>
+        <button onclick="saveCode()">Save Code</button>
+        <div id="output" class="output"></div>
+    </div>
+    <script>
+        let saveIndex = 1;
+
+        async function runCode() {
+            const code = document.getElementById('code').value;
+            const outputDiv = document.getElementById('output');
+            outputDiv.textContent = 'Running...';
+            outputDiv.className = 'output';
+
+            try {
+                const response = await fetch('http://localhost:5000/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    outputDiv.textContent = result.output || 'No output';
+                    outputDiv.className = 'output success';
+                } else {
+                    outputDiv.textContent = result.error || 'An error occurred';
+                    outputDiv.className = 'output error';
+                }
+            } catch (error) {
+                outputDiv.textContent = `Error: ${error.message}`;
+                outputDiv.className = 'output error';
+            }
+        }
+
+        function saveCode() {
+            const code = document.getElementById('code').value;
+            const filename = `app.py${saveIndex++}`;
+            const blob = new Blob([code], { type: 'text/x-python' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+  </html>
+  
